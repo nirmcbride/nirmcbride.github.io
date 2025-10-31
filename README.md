@@ -1,129 +1,36 @@
-# Bugsfree Web IPTV Player
+# IPTV player for Second Life
 
-**Bugsfree Web IPTV Player** is a modern, privacy-friendly IPTV streaming web app. It allows users to play online and local IPTV streams and playlists with a beautiful, responsive UI, channel history, favorites, live analysis, and more—right in your browser.
-
+**IPTV player for Second Life** is modified from Bugsfree Studio Web IPTV, a web app originally developed by Bugsfree Studio. I made some minor modifications to make it easier to use with Second Life viewers. 
 ---
 
 ## Features
 
-- **Modern Responsive UI**: Works on desktop and mobile browsers.
-- **Stream Any Supported Video**:
-  - Supports `.m3u8` (HLS), `.mpd` (DASH), `.mp4`, and direct stream/video links.
-  - Works with both local file uploads and remote URLs.
-- **Playlist Support**:
-  - Load and parse M3U playlists from file or URL.
-  - Channel logos are displayed; fallback to a default logo if missing.
-  - Channel/favorite highlight and quick switching.
-  - Playlist name always visible above channels.
-- **History**:
-  - Automatically saves uploaded files/URLs in history.
-  - Re-load or delete any history entry, or clear all history.
-- **Favorites**:
-  - Mark/unmark any channel as favorite.
-  - Export favorites as an M3U playlist.
-- **Channel Analysis**:
-  - One-click live status check for all channels: shows online/offline/total, with a donut chart.
-- **Theme Support**:
-  - Light and dark mode toggle.
-- **Local Time Bar**:
-  - Always shows your current local time at the top left, even in fullscreen.
-- **Notifications**:
-  - All status and error messages appear as centered overlays on the player—not as popups or alerts.
-- **URL Encryption**:
-  - When a channel is loaded or changed, the address bar updates to `?channel=ENCRYPTED` (20-30 chars). Channel URLs are never exposed in the browser bar.
-  - You can bookmark/share the encrypted link; it will auto-decrypt and play on load.
-- **No Tracking, Analytics, or Ads**:
-  - 100% privacy-friendly, no telemetry, no cookies, no requests except for your streams and playlist links.
+Please move to https://github.com/bugsfreeweb/WebIPTV to check the original project
 
 ---
 
-## Usage
+## Disclaimer
+**Educational and Research Use Only**
+This IPTV player web app is developed solely for educational and research purposes. It aggregates and organizes publicly available streaming links sourced from various third-party repositories across the internet for user convenience. The app does not host, distribute, transmit, or provide any streaming content itself— all links are external and fetched dynamically.
 
-### 1. Local Use (Open Without a Server)
+**No Affiliation**
+The developers and maintainers of this project are not affiliated with, endorsed by, or in any way connected to the content providers, broadcasters, or streaming services referenced in the app or its exported files (e.g., M3U playlists). We have no control over the content linked to these sources.
 
-Just open `index.html` in your browser. All features work locally.  
-No installation, no backend needed!
+**User Responsibility**
+Users are solely responsible for verifying that their use of the app and any aggregated streaming links complies with all applicable local, national, and international laws, including but not limited to copyright laws, intellectual property rights, broadcasting regulations, and terms of service from content providers. It is your duty to ensure that accessing or viewing any content is lawful in your jurisdiction. The developers assume no liability for any misuse or illegal activities.
 
-### 2. Load a Playlist
+**No Warranty or Guarantee**
+- Availability and Quality: Links are compiled from public, third-party sources and may become outdated, unavailable, or modified without notice. We provide no assurances regarding the uptime, streaming quality, safety, or performance of these links.  
 
-- **From File**: Use the "Upload Playlist" button and select an `.m3u`, `.json`, or `.txt` file.
-- **From URL**: Paste a direct link to an `.m3u`, `.json`, `.txt`, or stream URL and click "Load".
-- The player will parse the playlist, show all channels, and start playing the first stream.
-- The playlist name (file name or URL) is always shown above the channel list.
 
-### 3. Channel Controls
+- Legality and Safety: While we aim to aggregate only publicly available links, we cannot verify the legality or security of every source. Users access these at their own risk, and the app includes no malware scanning or content moderation.  
 
-- Click any channel to start streaming instantly.
-- The selected channel is highlighted.
-- Click the heart icon to add/remove from favorites (also highlighted).
 
-### 4. History & Favorites
+- As-Is Basis: This project is provided "as is" without any warranties, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement.
 
-- All loaded files/URLs are saved in history for quick reload.
-- Delete individual history entries or all at once.
-- Export your favorites as an `.m3u` playlist.
+**Content Ownership**
+All streaming content, media, and intellectual property accessible via the aggregated links remains the exclusive property of its respective owners (e.g., networks, studios, or creators). This app does not claim ownership, distribute, or endorse any content. Any infringement is unintentional and solely the responsibility of the end user.
 
-### 5. Analysis
+**Acceptance of Terms**
+By accessing, using, or downloading this IPTV player web app, its source code, or any generated files (such as playlists), you acknowledge that you have read, understood, and agree to be bound by this disclaimer. If you do not agree, do not use the app.  
 
-- Go to the Analysis tab and click the check icon to test all channels for online/offline status.
-- See a summary and donut chart; filter by total/online/offline.
-
-### 6. Encrypted Channel URLs
-
-- As soon as you play a channel, the address bar shows `?channel=ENCRYPTEDLINK`.
-- You can bookmark or share this link; opening it will auto-load and play the channel (as long as the playlist/channel was previously loaded on that browser).
-
----
-
-## Tech Stack
-
-- **HTML5, CSS3** (Vanilla, no frameworks)
-- **JavaScript (ES6+)**
-- [hls.js](https://github.com/video-dev/hls.js) for HLS streams
-- [dash.js](https://github.com/Dash-Industry-Forum/dash.js) for DASH streams
-- [feather-icons](https://feathericons.com/) for UI icons
-
----
-
-## Privacy & Security
-
-- No data is sent anywhere except for the stream URLs you load.
-- All history, favorites, and playlist data are stored locally in your browser (localStorage).
-- Channel links in the address bar are encrypted and cannot be reverse-engineered without the original playlist.
-
----
-
-## Development
-
-1. Clone or download the repository.
-2. Simply open `index.html` in your browser to run locally.
-3. All assets are loaded via CDN for quick prototyping and testing.
-4. For production/hosting, you may self-host or deploy to any static web hosting service (Netlify, GitHub Pages, Vercel, etc.).
-
----
-
-## File Structure
-
-```
-index.html
-app.js
-styles.css
-README.md
-```
-
----
-
-## License
-
-MIT License
-
----
-
-## Credits
-
-Made with ❤️ by Bugsfree Studio.
-
-## Donate the project
-- DOGE: <b>DEtH2yFUjjUEBUyd3scjs38X7S1Z7ee7zD</b>
-- BTC Lightening: <b>bugsfree@speed.app</b>
-- SOL: <b>bugsfree.sol</b>
