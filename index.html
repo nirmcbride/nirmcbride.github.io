@@ -19,7 +19,6 @@
 </head>
 <body class="light">
     <div class="container">
-        <div class="localtime-bar" id="localTime"></div>
         <video id="player" controls autoplay playsinline muted poster="https://bugsfreecdn.netlify.app/BugsfreeDefault/player-poster.webp"></video>
         <button id="toggleTheme" class="theme-toggle-btn" title="Toggle theme"><i data-feather="moon" class="w-6 h-6"></i></button>
         <button id="toggleSidebar" class="sidebar-toggle" title="Toggle sidebar"><i data-feather="x" class="w-6 h-6"></i></button>
@@ -29,7 +28,7 @@
                     <h3>Upload Playlist or URL</h3>
                     <input type="file" id="fileInput" accept=".m3u,.json,.txt">
                     <div class="url-row">
-                        <input type="text" id="urlInput" placeholder="Enter stream URL">
+                        <input type="text" id="urlInput" placeholder="Enter stream URL" value="https://iptv-org.github.io/iptv/index.m3u ">
                         <button id="loadUrl" title="Load Stream"><i data-feather="play"></i></button>
                     </div>
                 </div>
@@ -39,7 +38,7 @@
                 <div class="tabs">
                     <div class="tab active" data-tab="channels"><i data-feather="tv" class="w-5 h-5"></i></div>
                     <div class="tab" data-tab="history"><i data-feather="clock" class="w-5 h-5"></i></div>
-                    <div class="tab" data-tab="favorites"><i data-feather="heart" class="w-5 h-5"></i></div>
+                    <div class="tab" style="display: none;" data-tab="favorites"><i data-feather="heart" class="w-5 h-5"></i></div>
                     <div class="tab" data-tab="analysis"><i data-feather="bar-chart-2" class="w-5 h-5"></i></div>
                 </div>
                 <div class="tab-content active" id="channels-tab">

@@ -1,5 +1,32 @@
-const PLAYER_POSTER = "https://bugsfreecdn.netlify.app/BugsfreeDefault/player-poster.webp";
-const DEFAULT_LOGO = "https://bugsfreecdn.netlify.app/BugsfreeDefault/logo.png";
+// 默认图片
+// const PLAYER_POSTER = "https://bugsfreecdn.netlify.app/BugsfreeDefault/player-poster.webp";
+// const DEFAULT_LOGO = "https://bugsfreecdn.netlify.app/BugsfreeDefault/logo.png";
+
+// 视频播放元素海报图
+const PLAYER_POSTER = "https://mate.tools/img/4000x2500?bgcolor=dddddd&textcolor=979797&text=video&fmt=png";
+// 频道logo图
+const DEFAULT_LOGO = "https://mate.tools/img/512x512?bgcolor=dddddd&textcolor=979797&text=video&fmt=png";
+// Copyrights 图
+const Copyrights_LOGO = 'https://mate.tools/img/340x61?bgcolor=dddddd&textcolor=979797&text=video&fmt=png'
+// 添加拦截浏览器的数组
+const blockedBrowsers = []
+
+
+// --- Browser Detection and Blocking ---
+function isBlockedBrowser() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const browers = blockedBrowsers;
+    return browers.some(browser => userAgent.includes(browser.toLowerCase()));
+}
+
+// 如果检测到被阻止的浏览器，停止运行
+if (isBlockedBrowser()) {
+    document.body.innerHTML = ` 
+        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f0f0; font-family: Arial, sans-serif;">
+        </div>
+    `;
+    throw new Error("Blocked browser detected - application terminated");
+}
 
 // --- M3U Playlist Parser ---
 function parseM3U(content) {
@@ -13,7 +40,7 @@ function parseM3U(content) {
                 const nameMatch = line.match(/,(.+)$/);
                 const logoMatch = line.match(/tvg-logo="([^"]+)"/);
                 currentChannel = {
-                    name: nameMatch ? nameMatch[1] : '未知频道',
+                    name: nameMatch ? nameMatch[1] : 'Unknown Channel',
                     logo: logoMatch ? logoMatch[1] : null
                 };
             } else if (line && !line.startsWith('#') && currentChannel) {
@@ -29,7 +56,7 @@ function parseM3U(content) {
             playStream(channels[0].url);
         }
     } catch (e) {
-        showPlayerNotification("❌ 解析M3U播放列表失败", 3200);
+        showPlayerNotification("❌ Failed to parse M3U playlist", 3200);
     }
 }
 
@@ -68,24 +95,8 @@ async function decryptChannelUrl(enc, origList = null) {
         const tryEnc = await encryptChannelUrl(url);
         if (tryEnc === enc) return url;
     }
-    throw new Error("无法解码频道链接。");
+    throw new Error("Cannot decode channel link.");
 }
-
-// --- Local Time Bar ---
-function updateLocalTime() {
-    const el = document.getElementById('localTime');
-    const d = new Date();
-    let hour = d.getHours();
-    let min = d.getMinutes();
-    let ampm = hour >= 12 ? 'PM' : 'AM';
-    let hour12 = hour % 12 || 12;
-    let day = String(d.getDate()).padStart(2, '0');
-    let month = String(d.getMonth() + 1).padStart(2, '0');
-    let year = d.getFullYear();
-    let timeStr = `${hour12}:${min.toString().padStart(2, '0')} ${ampm} (${day}-${month}-${year})`;
-    el.textContent = timeStr;
-}
-setInterval(updateLocalTime, 1000); updateLocalTime();
 
 function refreshFeather() {
     try { if (document.querySelector('[data-feather]')) feather.replace(); } catch (e) {}
@@ -119,6 +130,13 @@ let analysisMode = 'total';
 let analysisInProgress = false;
 let playlistName = localStorage.getItem('playlistName') || '';
 
+// --- Dynamic Loading Variables ---
+let displayedChannels = [];
+let channelsPerLoad = 20;
+let currentLoadIndex = 0;
+let isLoadingMore = false;
+let scrollTimeout = null;
+
 player.poster = PLAYER_POSTER;
 
 // --- Player Notification ---
@@ -150,7 +168,7 @@ function playerSpinner(visible, msg) {
             `<span class="spinner"><svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg></span> ${msg || "正在加载流媒体..."}`, 0
+            </svg></span> ${msg || "Loading Stream..."}`, 0
         );
     } else {
         hidePlayerNotification();
@@ -190,13 +208,13 @@ mouseActiveHandler();
 });
 
 function updateSidebarFooter() {
-    const year = new Date().getFullYear();
-    sidebarFooter.innerHTML = `&copy; ${year} Copyrights Bugsfree studio All rights reserved.`;
+    sidebarFooter.innerHTML = `<img src="${Copyrights_LOGO}"></img>`;
 }
 updateSidebarFooter();
 
 function getThemePref() {
-    return localStorage.getItem('theme') === 'light';
+    // return localStorage.getItem('theme') === 'light';
+    return true;
 }
 function setTheme(isLight) {
     document.body.classList.toggle('light', isLight);
@@ -209,7 +227,7 @@ function setTheme(isLight) {
     toggleThemeBtn.innerHTML = `<i data-feather="${isLight ? 'sun' : 'moon'}" class="w-6 h-6"></i>`;
     refreshFeather();
 }
-setTheme(getThemePref());
+
 toggleThemeBtn.addEventListener('click', () => {
     const isLight = !document.body.classList.contains('light');
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
@@ -224,7 +242,7 @@ function setSidebarVisible(visible) {
 toggleSidebarBtn.addEventListener('click', () => {
     setSidebarVisible(sidebar.classList.contains('hidden'));
 });
-setSidebarVisible(true);
+setSidebarVisible(false);
 
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -349,7 +367,7 @@ async function playStream(url, retry = false, skipUpdateUrl = false) {
         showPlayerNotification("Bugsfree Studio", 2000);
         return;
     }
-    playerSpinner(true, "正在加载流媒体...");
+    playerSpinner(true, "Loading Stream...");
     currentChannelUrl = url;
     highlightPlaylist();
     if (!skipUpdateUrl) {
@@ -422,44 +440,137 @@ function addLogoErrorHandlers(parentElement) {
 
 // --- Display Functions (NO Inline Handlers) ---
 
+function loadMoreChannels() {
+    if (isLoadingMore || currentLoadIndex >= allChannels.length) return;
+    
+    isLoadingMore = true;
+    const startIndex = currentLoadIndex;
+    const endIndex = Math.min(startIndex + channelsPerLoad, allChannels.length);
+    const channelsToLoad = allChannels.slice(startIndex, endIndex);
+    
+    // 创建加载指示器
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.id = 'loading-indicator';
+    loadingIndicator.innerHTML = `
+        <div style="text-align: center; padding: 20px; color: #666;">
+            <div class="spinner" style="display: inline-block; width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #2563eb; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 10px;"></div>
+            Loading more channels...
+        </div>
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    `;
+    
+    channelList.appendChild(loadingIndicator);
+    
+    // 模拟异步加载延迟
+    setTimeout(() => {
+        // 移除加载指示器
+        const indicator = document.getElementById('loading-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+        
+        // 添加新频道到显示列表
+        displayedChannels = displayedChannels.concat(channelsToLoad);
+        currentLoadIndex = endIndex;
+        
+        // 渲染新加载的频道
+        const newChannelsHtml = channelsToLoad.map(ch => {
+            const sanitizedUrl = sanitizeString(ch.url);
+            const sanitizedName = sanitizeString(ch.name);
+            const isFavorited = favorites.some(f => f.url === ch.url);
+            const isCurrent = sanitizedUrl === currentChannelUrl;
+            return `
+                <button class="channel-btn${isCurrent ? ' playlist-current' : ''}${isFavorited ? ' playlist-favorite' : ''}" data-url="${sanitizedUrl}">
+                    ${getLogoHtml(ch.logo, ch.name)}
+                    <i data-feather="tv" class="w-5 h-5"></i> ${sanitizedName}
+                    <span style="margin-left:auto;display:flex;align-items:center;">
+                        <i data-feather="heart" class="favorite-btn w-5 h-5${isFavorited ? ' text-red-500' : ''}" data-url="${sanitizedUrl}" data-name="${sanitizedName}" data-logo="${sanitizeString(ch.logo)}"></i>
+                    </span>
+                </button>
+            `;
+        }).join('');
+        
+        // 将新频道添加到列表中
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = newChannelsHtml;
+        
+        tempDiv.querySelectorAll('.channel-btn').forEach(btn => {
+            channelList.appendChild(btn);
+            
+            // 添加事件监听器
+            btn.addEventListener('click', () => {
+                playStream(btn.getAttribute('data-url'));
+            });
+            
+            // 添加收藏按钮事件
+            const favoriteBtn = btn.querySelector('.favorite-btn');
+            if (favoriteBtn) {
+                favoriteBtn.addEventListener('click', event => {
+                    event.stopPropagation();
+                    toggleFavorite(
+                        favoriteBtn.getAttribute('data-url'),
+                        favoriteBtn.getAttribute('data-name'),
+                        favoriteBtn.getAttribute('data-logo')
+                    );
+                });
+            }
+        });
+        
+        refreshFeather();
+        
+        // CSP-safe error handler for logos - 确保动态加载的logo也有错误处理
+        addLogoErrorHandlers(channelList);
+        
+        isLoadingMore = false;
+        
+        // 如果还有更多频道，继续监听滚动
+        if (currentLoadIndex < allChannels.length) {
+            setupScrollListener();
+        }
+    }, 300); // 300ms延迟模拟网络加载
+}
+
+function setupScrollListener() {
+    const channelListContainer = document.querySelector('.channel-list');
+    if (!channelListContainer) return;
+    
+    channelListContainer.addEventListener('scroll', function() {
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        
+        scrollTimeout = setTimeout(() => {
+            const scrollTop = channelListContainer.scrollTop;
+            const scrollHeight = channelListContainer.scrollHeight;
+            const clientHeight = channelListContainer.clientHeight;
+            const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+            
+            // 当滚动到距离底部20%时加载更多
+            if (scrollPercentage > 0.8 && !isLoadingMore && currentLoadIndex < allChannels.length) {
+                loadMoreChannels();
+            }
+        }, 100); // 防抖延迟
+    });
+}
+
 function displayChannels(channels) {
-    channelList.innerHTML = channels.map(ch => {
-        const sanitizedUrl = sanitizeString(ch.url);
-        const sanitizedName = sanitizeString(ch.name);
-        const isFavorited = favorites.some(f => f.url === ch.url);
-        const isCurrent = sanitizedUrl === currentChannelUrl;
-        return `
-            <button class="channel-btn${isCurrent ? ' playlist-current' : ''}${isFavorited ? ' playlist-favorite' : ''}" data-url="${sanitizedUrl}">
-                ${getLogoHtml(ch.logo, ch.name)}
-                <i data-feather="tv" class="w-5 h-5"></i> ${sanitizedName}
-                <span style="margin-left:auto;display:flex;align-items:center;">
-                    <i data-feather="heart" class="favorite-btn w-5 h-5${isFavorited ? ' text-red-500' : ''}" data-url="${sanitizedUrl}" data-name="${sanitizedName}" data-logo="${sanitizeString(ch.logo)}"></i>
-                </span>
-            </button>
-        `;
-    }).join('');
-    refreshFeather();
-    highlightPlaylist();
-
-    // Add event listeners
-    channelList.querySelectorAll('.channel-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            playStream(btn.getAttribute('data-url'));
-        });
-    });
-    channelList.querySelectorAll('.favorite-btn').forEach(icon => {
-        icon.addEventListener('click', event => {
-            event.stopPropagation();
-            toggleFavorite(
-                icon.getAttribute('data-url'),
-                icon.getAttribute('data-name'),
-                icon.getAttribute('data-logo')
-            );
-        });
-    });
-
-    // CSP-safe error handler for logos
-    addLogoErrorHandlers(channelList);
+    // 重置动态加载状态
+    displayedChannels = [];
+    currentLoadIndex = 0;
+    isLoadingMore = false;
+    
+    // 清空列表
+    channelList.innerHTML = '';
+    
+    // 设置滚动监听
+    setupScrollListener();
+    
+    // 加载第一批频道
+    allChannels = channels;
+    loadMoreChannels();
 }
 
 function toggleFavorite(url, name, logo) {
@@ -487,7 +598,7 @@ function displayFavorites() {
                 </span>
             </button>
         `;
-    }).join('') : '<p>暂无收藏。</p>';
+    }).join('') : '<p>No favorites added.</p>';
     refreshFeather();
     highlightPlaylist();
 
@@ -521,7 +632,7 @@ function displayHistory() {
             }
             const sanitizedLabel = sanitizeString(label);
             return `
-                <p>默认自动播放第一个</p>
+                <p>Automatically play the first one by default</p>
                 <button class="history-btn" data-index="${i}">
                     <span class="history-label"><i data-feather="${h.type === 'file' ? 'file' : 'link'}" class="w-5 h-5"></i> ${sanitizedLabel}</span>
                     <span style="margin-left:auto;display:flex;align-items:center;">
@@ -614,25 +725,25 @@ function deleteHistory(index) {
     history.splice(index, 1);
     localStorage.setItem('history', JSON.stringify(history));
     displayHistory();
-    showPlayerNotification("历史记录已删除。", 1800);
+    showPlayerNotification("History entry deleted.", 1800);
 }
 
 function deleteAllHistory() {
     if (!history.length) return;
-    if (confirm("您确定要删除所有历史记录吗？")) {
+    if (confirm("Are you sure you want to delete all history?")) {
         history = [];
         localStorage.setItem('history', JSON.stringify(history));
         displayHistory();
-        showPlayerNotification("所有历史记录已删除。", 2000);
+        showPlayerNotification("All history deleted.", 2000);
     }
 }
 
 // --- Analysis ---
 async function analyzePlaylist(manual = false) {
-    analysisText.textContent = manual ? "正在检查状态..." : "正在检查...";
+    analysisText.textContent = manual ? "Checking status..." : "Checking...";
     analysisChart.style.display = 'block';
     if (!allChannels.length) {
-        analysisText.textContent = "未加载播放列表";
+        analysisText.textContent = "No playlist loaded";
         analysisChart.style.display = 'none';
         analysisLast = { total: 0, online: 0, offline: 0, list: [], onlineList: [], offlineList: [] };
         updateAnalysisList();
@@ -740,7 +851,7 @@ fileInput.addEventListener('change', (e) => {
         } else {
             if (content.trim().startsWith('#EXTM3U') || content.includes('#EXTINF')) {
                 parseM3U(content);
-                localStorage.setItem('playlistName', file.name || '播放列表');
+                localStorage.setItem('playlistName', file.name || 'Playlist');
             } else {
                 try {
                     const json = JSON.parse(content);
@@ -760,7 +871,7 @@ fileInput.addEventListener('change', (e) => {
                 }
             }
         }
-        showPlayerNotification("文件上传并加载成功。", 2200);
+        showPlayerNotification("File uploaded and loaded successfully.", 2200);
         fileInput.value = "";
     };
     reader.readAsText(file);
@@ -770,7 +881,7 @@ loadUrlBtn.addEventListener('click', () => {
     const url = urlInput.value.trim();
     if (!url) return;
     if (isDuplicateUpload({ type: 'url', name: url, url })) {
-        showPlayerNotification("检测到重复URL上传！", 2000);
+        showPlayerNotification("Duplicate URL upload detected!", 2000);
         return;
     }
     history.push({ type: 'url', name: url, url });
@@ -781,7 +892,7 @@ loadUrlBtn.addEventListener('click', () => {
             .then(res => res.text())
             .then(txt => {
                 parseM3U(txt);
-                localStorage.setItem('playlistName', url.split('/').pop() || '播放列表');
+                localStorage.setItem('playlistName', url.split('/').pop() || url);
             })
             .catch(() => { });
     } else if (url.endsWith('.json')) {
@@ -795,12 +906,12 @@ loadUrlBtn.addEventListener('click', () => {
                     allChannels = [];
                 } else if (Array.isArray(json.channels)) {
                     allChannels = json.channels.map(ch => ({
-                        name: ch.name || '未知频道',
+                        name: ch.name || 'Unknown Channel',
                         url: ch.url,
                         logo: ch.logo || DEFAULT_LOGO
                     }));
                     localStorage.setItem('lastPlaylist', JSON.stringify(allChannels));
-                    localStorage.setItem('playlistName', url.split('/').pop() || '播放列表');
+                    localStorage.setItem('playlistName', url.split('/').pop() || url);
                     displayChannels(allChannels);
                     if (allChannels.length > 0) playStream(allChannels[0].url);
                 }
@@ -824,7 +935,7 @@ loadUrlBtn.addEventListener('click', () => {
         channelList.innerHTML = '';
         allChannels = [];
     }
-    showPlayerNotification("URL加载成功。", 2000);
+    showPlayerNotification("URL loaded successfully.", 2000);
     urlInput.value = "";
 });
 
@@ -832,7 +943,7 @@ exportFavoritesBtn.addEventListener('click', () => {
     if (!favorites.length) return;
     let m3u = "#EXTM3U\n";
     favorites.forEach(f => {
-        m3u += `#EXTINF:-1${f.logo ? ` tvg-logo="${f.logo}"` : ""},${f.name || "收藏"}\n${f.url}\n`;
+        m3u += `#EXTINF:-1${f.logo ? ` tvg-logo="${f.logo}"` : ""},${f.name || "Favorite"}\n${f.url}\n`;
     });
     const blob = new Blob([m3u], { type: 'audio/x-mpegurl' });
     const link = document.createElement('a');
@@ -841,7 +952,7 @@ exportFavoritesBtn.addEventListener('click', () => {
     document.body.appendChild(link);
     link.click();
     setTimeout(() => { document.body.removeChild(link); }, 200);
-    showPlayerNotification("收藏播放列表已导出！", 2000);
+    showPlayerNotification("Favorites playlist exported!", 2000);
 });
 
 // --- Initial Load ---
@@ -864,8 +975,15 @@ exportFavoritesBtn.addEventListener('click', () => {
         }
     }
     displayHistory();
-    loadHistoryFile(0);
+    if (history.length > 0) {
+        loadHistoryFile(0);
+    }
+    setTheme(getThemePref());
     displayFavorites();
+    // 默认加载指定内容
+    if (urlInput.value.trim()) {
+        loadUrlBtn.click();
+    }
     // --- Playlist name display as playlist item (always after load/refresh) ---
     const playlistName = localStorage.getItem('playlistName');
     let playlistBar = document.getElementById('playlistBar');
@@ -876,7 +994,7 @@ exportFavoritesBtn.addEventListener('click', () => {
         channelList.parentNode.insertBefore(playlistBar, channelList);
     }
     if (playlistName) {
-        playlistBar.textContent = `播放列表: ${playlistName}`;
+        playlistBar.textContent = `Playlist: ${playlistName}`;
         playlistBar.style.display = '';
     } else {
         playlistBar.style.display = 'none';
@@ -890,21 +1008,21 @@ document.addEventListener('keydown', (event) => {
         const currentIndex = allChannels.findIndex(ch => ch.url === currentChannelUrl);
         if (currentIndex < allChannels.length - 1) {
             playStream(allChannels[currentIndex + 1].url);
-            showPlayerNotification(`正在播放: ${allChannels[currentIndex + 1].name}`, 2000);
+            showPlayerNotification(`Playing: ${allChannels[currentIndex + 1].name}`, 2000);
         }
     } else if (event.key === 'ArrowLeft') {
         const currentIndex = allChannels.findIndex(ch => ch.url === currentChannelUrl);
         if (currentIndex > 0) {
             playStream(allChannels[currentIndex - 1].url);
-            showPlayerNotification(`正在播放: ${allChannels[currentIndex - 1].name}`, 2000);
+            showPlayerNotification(`Playing: ${allChannels[currentIndex - 1].name}`, 2000);
         }
     } else if (event.key === 'ArrowUp') {
         const newVolume = Math.min(player.volume + 0.1, 1);
         player.volume = newVolume;
-        showPlayerNotification(`音量: ${Math.round(newVolume * 100)}%`, 1500);
+        showPlayerNotification(`Volume: ${Math.round(newVolume * 100)}%`, 1500);
     } else if (event.key === 'ArrowDown') {
         const newVolume = Math.max(player.volume - 0.1, 0);
         player.volume = newVolume;
-        showPlayerNotification(`音量: ${Math.round(newVolume * 100)}%`, 1500);
+        showPlayerNotification(`Volume: ${Math.round(newVolume * 100)}%`, 1500);
     }
 });

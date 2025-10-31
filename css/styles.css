@@ -1,4 +1,30 @@
+/* =====================================================
+   页面尺寸控制系统
+   =====================================================
+   你可以通过修改下面的CSS变量来调整整个页面的尺寸：
+   
+   --page-scale: 页面整体缩放比例（推荐值：0.5-2.0）
+   --base-font-size: 基础字体大小（推荐值：12px-24px）
+   --sidebar-width: 侧边栏宽度（推荐值：280px-400px）
+   --container-max-width: 容器最大宽度（推荐值：80%-100%）
+   --container-max-height: 容器最大高度（推荐值：80vh-100vh）
+   
+   常用尺寸预设：
+   - 小尺寸（移动端优化）：--page-scale: 0.8; --base-font-size: 14px;
+   - 标准尺寸（默认）：--page-scale: 1; --base-font-size: 16px;
+   - 大尺寸（大屏优化）：--page-scale: 1.2; --base-font-size: 18px;
+   - 超大尺寸（电视/投影）：--page-scale: 1.5; --base-font-size: 20px;
+   ===================================================== */
+
 :root {
+    /* 页面尺寸控制变量 - 你可以在这里调整整体尺寸 */
+    --page-scale: 1.0;                    /* 页面整体缩放比例 */
+    --base-font-size: 12px;            /* 基础字体大小 */
+    --sidebar-width: 340px;            /* 侧边栏宽度 */
+    --container-max-width: 100%;       /* 容器最大宽度 */
+    --container-max-height: 100vh;     /* 容器最大高度 */
+
+    /* 其他现有变量 */
     --sidebar-bg: #181c24;
     --sidebar-bg-light: #f9fafb;
     --sidebar-primary: #2563eb;
@@ -6,6 +32,9 @@
     --sidebar-border-light: #e5e7eb;
     --sidebar-radius: 14px;
     --sidebar-shadow: 0 4px 40px 0 rgba(0,0,0,0.11);
+    
+    /* 根据页面缩放调整字体大小 */
+    --scaled-font-size: calc(var(--base-font-size) * var(--page-scale));
 }
 body {
     margin: 0;
@@ -14,6 +43,12 @@ body {
     color: #e0e0e0;
     font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
     transition: background 0.3s, color 0.3s;
+    font-size: var(--scaled-font-size);  /* 使用缩放后的字体大小 */
+    transform: scale(var(--page-scale));  /* 整体页面缩放 */
+    transform-origin: top left;          /* 缩放原点 */
+    width: calc(100% / var(--page-scale)); /* 调整宽度以适应缩放 */
+    height: calc(100vh / var(--page-scale)); /* 调整高度以适应缩放 */
+    overflow: hidden;                    /* 防止缩放后出现滚动条 */
 }
 body.light {
     background: #f7f9fa;
@@ -21,24 +56,33 @@ body.light {
 }
 .container {
     display: flex;
-    height: 100vh;
+    height: var(--container-max-height);
+    max-height: var(--container-max-height);
+    max-width: var(--container-max-width);
     position: relative;
+    margin: 0 auto;  /* 居中对齐 */
+}
+#toggleTheme{
+    display: none;
 }
 #player {
     width: 100%;
-    height: 100vh;
+    height: var(--container-max-height);
     object-fit: cover;
     position: absolute;
     top: 0;
     left: 0;
     z-index: 1;
 }
+#status {
+    display: none;
+}
 .sidebar {
     position: fixed;
     top: 0;
     right: 0;
-    width: 340px;
-    height: 100vh;
+    width: var(--sidebar-width);
+    height: var(--container-max-height);
     background: var(--sidebar-bg);
     display: flex;
     flex-direction: column;
@@ -47,6 +91,7 @@ body.light {
     z-index: 22;
     border-left: 1.5px solid var(--sidebar-border);
     overflow: hidden;
+    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
 }
 .sidebar.light {
     background: var(--sidebar-bg-light);
@@ -54,8 +99,9 @@ body.light {
     border-left: 1.5px solid var(--sidebar-border-light);
 }
 .sidebar.hidden {
-    transform: translateX(110%);
+    transform: translateX(100%);
     box-shadow: none;
+    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
 }
 .sidebar-content {
     flex: 1 1 auto;
@@ -301,8 +347,8 @@ body.light .localtime-bar { background: #e5e7eb; color: #222; }
     width: 100%;
     padding: 10px 10px;
     margin-bottom: 4px;
-    background: #232532;
-    color: #f5f6fa;
+    background: #f5f6fa;
+    color: #232532;
     border: none;
     border-radius: 8px;
     text-align: left;
@@ -339,7 +385,7 @@ body.light .localtime-bar { background: #e5e7eb; color: #222; }
     z-index: 2;
     transition: color 0.18s;
 }
-.playlist-current { border: 2px solid var(--sidebar-primary) !important; background: #1e293b !important; color: #fff !important; box-shadow: 0 3px 20px 0 rgba(37,99,235,0.13); }
+.playlist-current { border: 2px solid var(--sidebar-primary) !important; background: #f5f6fa !important; color: #232532 !important; box-shadow: 0 3px 20px 0 rgba(37,99,235,0.13); }
 .playlist-favorite { background: #202c2b !important; color: #ff2970 !important; }
 .playlist-current .favorite-btn, .playlist-favorite .favorite-btn { color: #ff2970 !important; fill: #ff2970 !important; }
 .playlist-current.playlist-favorite { background: linear-gradient(90deg, #2563eb 60%, #ff2970 100%) !important; color: #fff !important; }
