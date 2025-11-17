@@ -3,11 +3,14 @@
 // const DEFAULT_LOGO = "https://bugsfreecdn.netlify.app/BugsfreeDefault/logo.png";
 
 // 视频播放元素海报图
-const PLAYER_POSTER = "https://mate.tools/img/4000x2500?bgcolor=dddddd&textcolor=979797&text=video&fmt=png";
+//const PLAYER_POSTER = "https://mate.tools/img/4000x2500?bgcolor=dddddd&textcolor=979797&text=Click%20the%20top&fmt=png";
+const PLAYER_POSTER = "img/IPTVscreen2.jpg";
 // 频道logo图
 const DEFAULT_LOGO = "https://mate.tools/img/512x512?bgcolor=dddddd&textcolor=979797&text=video&fmt=png";
 // Copyrights 图
-const Copyrights_LOGO = 'https://mate.tools/img/340x61?bgcolor=dddddd&textcolor=979797&text=video&fmt=png'
+//const Copyrights_LOGO = 'https://mate.tools/img/340x61?bgcolor=dddddd&textcolor=979797&text=video&fmt=png'
+const Copyrights_LOGO = 'img/saulogo340x61.png';
+
 // 添加拦截浏览器的数组
 const blockedBrowsers = []
 
